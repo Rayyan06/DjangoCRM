@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.views import generic
 
 from agents.mixins import OrganizerAndLoginRequiredMixin
-from .models import Lead, Agent
+from .models import Category, Lead, Agent
 from .forms import AssignAgentForm, LeadForm, LeadModelForm, CustomUserCreationForm
 
 # CRUD + L - Create, Retrieve, Update, and Delete + List
@@ -202,6 +202,29 @@ class AssignAgentView(OrganizerAndLoginRequiredMixin, generic.FormView):
         lead.save()
         return super(AssignAgentView, self).form_valid(form)
     
+
+class CategoryListView(LoginRequiredMixin, generic.ListView):
+    template_name = "leads/category_list.html"
+
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Initial Queryset of Leads for the entire organization
+
+        if user.is_organizer:
+            queryset = Category.objects.filter(
+                organization=user.userprofile,
+            )
+        else:
+            queryset = Category.objects.filter(
+                organization=user.agent.organization
+            )
+
+        return queryset # <--- Django only queries the database HERE
+
+
+
 # def lead_update(request, pk):
 #     lead = Lead.objects.get(id=pk)
 #     form = LeadForm()
