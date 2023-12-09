@@ -6,7 +6,7 @@ from django.views import generic
 
 from agents.mixins import OrganizerAndLoginRequiredMixin
 from .models import Category, Lead, Agent
-from .forms import AssignAgentForm, LeadForm, LeadModelForm, CustomUserCreationForm
+from .forms import AssignAgentForm, LeadCategoryUpdateForm, LeadForm, LeadModelForm, CustomUserCreationForm
 
 # CRUD + L - Create, Retrieve, Update, and Delete + List
 
@@ -243,6 +243,49 @@ class CategoryListView(LoginRequiredMixin, generic.ListView):
 
         return queryset # <--- Django only queries the database HERE
 
+
+
+class CategoryDetailView(LoginRequiredMixin, generic.DetailView):
+    template_name = "leads/category_detail.html"
+    context_object_name = "category"
+
+    
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Initial Queryset of Leads for the entire organization
+
+        if user.is_organizer:
+            queryset = Category.objects.filter(
+                organization=user.userprofile,
+            )
+        else:
+            queryset = Category.objects.filter(
+                organization=user.agent.organization
+            )
+
+        return queryset # <--- Django only queries the database HERE
+
+class LeadCategoryUpdateView(LoginRequiredMixin, generic.UpdateView):
+    template_name = "leads/lead_category_update.html"
+    form_class = LeadCategoryUpdateForm
+
+    def get_queryset(self):
+        user = self.request.user
+        # Initial Queryset of Leads for the entire organization
+
+        if user.is_organizer:
+            queryset = Lead.objects.filter(organization=user.userprofile)
+        else:
+            queryset = Lead.objects.filter(organization=user.agent.organization)
+
+            # filter for current agent that is logged in
+            queryset = queryset.filter(agent__user=user)
+        return queryset # <--- Django only queries the database HERE
+        
+    def get_success_url(self):
+        return reverse("leads:lead-detail", kwargs={"pk": self.get_object().id})
 
 
 # def lead_update(request, pk):
