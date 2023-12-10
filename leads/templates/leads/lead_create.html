@@ -2,12 +2,19 @@
 {% load tailwind_filters %}
 
 {% block content %}
-    <a href="{% url 'leads:lead-list' %}">Go back to leads</a>
-    <hr />
-    <h1>Create a New Lead</h1>
-    <form method="post">
+<div class="max-w-lg mx-auto">
+    <div class="py-5 border-b border-gray-200">
+        <a class="hover:text-blue-500" href="{% url 'leads:lead-list' %}">Go back to leads</a>
+    </div> 
+    <div class="py-5">
+        <h1 class="text-4xl text-gray-800">Create a New Lead</h1>
+    </div>
+    <form method="post" class="mt-5">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
+        {{ form | crispy }}
+        <button type='submit' class='w-full bg-blue-500 hover:bg-blue-400 px-3 py-2 mt-2 rounded-md text-white font-semibold'>
+            Create
+        </button>    
     </form>
+    
 {% endblock content %}
